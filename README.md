@@ -373,7 +373,7 @@ When mode=DRPAI_ADRCONV_MODE_ADD(1), this function can be called to add a new se
 <img src=./img/Figure_4-2-5(5).png width=800>  
 
 #### [Remark]  
-The range specified by org_address and size, 0xFC00_0000 to 0xFFFFFF_FFFF, cannot be used because it is used by the DRP-AI Driver. Therefore, care should be taken not to use this area during DRP-AI translator i8 translation. This prohibited range can be changed with 4.2.15 ioctl(DRPAI_SET_EXTRA_AREA).  
+The range specified by org_address and size, 0xFC00_0000 to 0xFFFFFF_FFFF, cannot be used because it is used by the DRP-AI Driver. Therefore, care should be taken not to use this area during DRP-AI translator i8 translation.   
 When adding setting using DRPAI_ADRCONV_MODE_ADD, set org_address and conv_address so that they do not overlap with previous settings.
 <br>
 
@@ -1005,6 +1005,7 @@ Device tree settings are shown as follows.
                          <GIC_SPI 915 IRQ_TYPE_LEVEL_HIGH>,
                          <GIC_SPI 916 IRQ_TYPE_LEVEL_HIGH>,
                          <GIC_SPI 917 IRQ_TYPE_LEVEL_HIGH>;
+            resets = <&cpg R9A09G057_DRPAI_ARESETN>;
             status = "disabled";
         };
 ```
