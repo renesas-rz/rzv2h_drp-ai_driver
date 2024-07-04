@@ -1,5 +1,5 @@
 diff --git a/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts b/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts
-index 57925d5..dabe137 100644
+index 57925d5..0e89ef4 100644
 --- a/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts
 +++ b/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts
 @@ -184,6 +184,15 @@
@@ -7,19 +7,19 @@ index 57925d5..dabe137 100644
  		regulator-always-on;
  	};
 +
-+    udmabuf@0 {
-+        compatible = "ikwzm,u-dma-buf";
-+        device-name = "udmabuf0";
-+        minor-number = <0>;
-+        size = <0x4000000>; // 64MiB
-+        dma-coherent;
-+        memory-region = <&image_buf0>;
-+    };
++	udmabuf@0 {
++		compatible = "ikwzm,u-dma-buf";
++		device-name = "udmabuf0";
++		minor-number = <0>;
++		size = <0x4000000>; // 64MiB
++		dma-coherent;
++		memory-region = <&image_buf0>;
++	};
  };
  
  &pinctrl {
 diff --git a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts
-index 186fff2..2970f26 100644
+index 186fff2..b0c6159 100644
 --- a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts
 +++ b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts
 @@ -327,6 +327,15 @@
@@ -27,34 +27,34 @@ index 186fff2..2970f26 100644
  #endif
  	};
 +
-+    udmabuf@0 {
-+        compatible = "ikwzm,u-dma-buf";
-+        device-name = "udmabuf0";
-+        minor-number = <0>;
-+        size = <0x4000000>; // 64MiB
-+        dma-coherent;
-+        memory-region = <&image_buf0>;
-+    };
++	udmabuf@0 {
++		compatible = "ikwzm,u-dma-buf";
++		device-name = "udmabuf0";
++		minor-number = <0>;
++		size = <0x4000000>; // 64MiB
++		dma-coherent;
++		memory-region = <&image_buf0>;
++	};
  };
  
  &audio_clka {
 diff --git a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts
-index cf96bb4..f7b6059 100644
+index 46934db..54892e5 100644
 --- a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts
 +++ b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts
-@@ -301,6 +301,15 @@
+@@ -309,6 +309,15 @@
  		};
  #endif
  	};
 +
-+    udmabuf@0 {
-+        compatible = "ikwzm,u-dma-buf";
-+        device-name = "udmabuf0";
-+        minor-number = <0>;
-+        size = <0x4000000>; // 64MiB
-+        dma-coherent;
-+        memory-region = <&image_buf0>;
-+    };
++	udmabuf@0 {
++		compatible = "ikwzm,u-dma-buf";
++		device-name = "udmabuf0";
++		minor-number = <0>;
++		size = <0x4000000>; // 64MiB
++		dma-coherent;
++		memory-region = <&image_buf0>;
++	};
  };
  
  &audio_clka {

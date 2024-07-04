@@ -1,0 +1,40 @@
+diff --git a/include/configs/rzv2h-dev.h b/include/configs/rzv2h-dev.h
+index d304c7a..554cc79 100644
+--- a/include/configs/rzv2h-dev.h
++++ b/include/configs/rzv2h-dev.h
+@@ -62,6 +62,11 @@
+ #define CONFIG_EXTRA_ENV_SETTINGS	\
+ 	"usb_pgood_delay=2000\0"	\
+ 	"bootm_size=0x10000000\0"	\
++	"ipaddr=192.168.1.11\0" \
++	"serverip=192.168.1.10\0" \
++	"netmask=255.255.255.0\0" \
++	"ethaddr=02:11:22:33:44:55\0" \
++	"eth1addr=02:11:22:33:44:66\0" \
+ 	"prodsdbootargs=setenv bootargs rw rootwait earlycon root=/dev/mmcblk2p2 \0" \
+ 	"prodemmcbootargs=setenv bootargs rw rootwait earlycon root=/dev/mmcblk0p2 \0" \
+ 	"bootimage=booti 0x48080000 - 0x48000000 \0" \
+@@ -72,6 +77,11 @@
+ #define CONFIG_EXTRA_ENV_SETTINGS	\
+ 	"usb_pgood_delay=2000\0"	\
+ 	"bootm_size=0x10000000\0"	\
++	"ipaddr=192.168.1.11\0" \
++	"serverip=192.168.1.10\0" \
++	"netmask=255.255.255.0\0" \
++	"ethaddr=02:11:22:33:44:55\0" \
++	"eth1addr=02:11:22:33:44:66\0" \
+ 	"prodsdbootargs=setenv bootargs rw rootwait earlycon root=/dev/mmcblk1p2 \0" \
+ 	"prodemmcbootargs=setenv bootargs rw rootwait earlycon root=/dev/mmcblk0p2 \0" \
+ 	"set_pmic=i2c dev 8; i2c mw 0x6a 0x22 0x0f; i2c mw 0x6a 0x24 0x00; i2c md 0x6a 0x00 0x30; i2c mw 0x12 0x8D 0x02; i2c md 0x12 0x20 0x80 \0" \
+@@ -83,6 +93,11 @@
+ #define CONFIG_EXTRA_ENV_SETTINGS       \
+ 	"usb_pgood_delay=2000\0"        \
+ 	"bootm_size=0x10000000\0"       \
++	"ipaddr=192.168.1.11\0" \
++	"serverip=192.168.1.10\0" \
++	"netmask=255.255.255.0\0" \
++	"ethaddr=02:11:22:33:44:55\0" \
++	"eth1addr=02:11:22:33:44:66\0" \
+ 	"prodsd0bootargs=setenv bootargs rw rootwait earlycon root=/dev/mmcblk0p2 \0" \
+ 	"prodsd1bootargs=setenv bootargs rw rootwait earlycon root=/dev/mmcblk1p2 \0" \
+ 	"bootimage=booti 0x48080000 - 0x48000000 \0" \

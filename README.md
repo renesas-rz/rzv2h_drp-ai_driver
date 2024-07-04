@@ -9,7 +9,7 @@ RZ/V2H
 <br>
 
 ## Overview
-This is the DRP-AI device driver in RZ/V2H Linux.  
+This is the DRP-AI device driver in RZ/V Linux.  
 DRP-AI performs AI inferences with high power efficiency.  
 The DRP-AI device driver provides an interface to easily handle the AI inference execution function of DRP-AI.  
 <br>
@@ -373,7 +373,7 @@ When mode=DRPAI_ADRCONV_MODE_ADD(1), this function can be called to add a new se
 <img src=./img/Figure_4-2-5(5).png width=800>  
 
 #### [Remark]  
-The range specified by org_address and size, 0xFC00_0000 to 0xFFFFFF_FFFF, cannot be used because it is used by the DRP-AI Driver. Therefore, care should be taken not to use this area during DRP-AI translator i8 translation.   
+The range specified by org_address and size, 0xFC00_0000 to 0xFFFFFF_FFFF, cannot be used because it is used by the DRP-AI Driver. Therefore, care should be taken not to use this area during DRP-AI translator i8 translation.  
 When adding setting using DRPAI_ADRCONV_MODE_ADD, set org_address and conv_address so that they do not overlap with previous settings.
 <br>
 
@@ -1010,7 +1010,7 @@ Device tree settings are shown as follows.
         };
 ```
 
-#### 5.3.2 DRP-AI part of r9a09g057h4-evk.dts
+#### 5.3.2 DRP-AI part of r9a09g057h4-evk-ver1.dts
 ```
         drp_reserved: DRP-AI@240000000 {
             reusable;
@@ -1019,6 +1019,7 @@ Device tree settings are shown as follows.
 
         &drpai0 {
             memory-region = <&drp_reserved>;
+            image-memory-region = <&image_buf0>;
             status = "okay";
         };
 

@@ -1,28 +1,28 @@
 diff --git a/arch/arm64/boot/dts/renesas/r9a09g057.dtsi b/arch/arm64/boot/dts/renesas/r9a09g057.dtsi
-index e92ea5f..4fbf978 100644
+index f5f79ad..46bd9ad 100644
 --- a/arch/arm64/boot/dts/renesas/r9a09g057.dtsi
 +++ b/arch/arm64/boot/dts/renesas/r9a09g057.dtsi
-@@ -2189,6 +2189,18 @@
+@@ -2269,6 +2269,18 @@
  				};
  			};
  		};
 +
-+        drpai0: drpai@16800000 {
-+            compatible = "renesas,rzv2h-drpai";
-+            reg = <0 0x17000000 0 0x1000000>,
-+                  <0 0x16800000 0 0x400000>;
-+            interrupts = <GIC_SPI 914 IRQ_TYPE_LEVEL_HIGH>,
-+                         <GIC_SPI 915 IRQ_TYPE_LEVEL_HIGH>,
-+                         <GIC_SPI 916 IRQ_TYPE_LEVEL_HIGH>,
-+                         <GIC_SPI 917 IRQ_TYPE_LEVEL_HIGH>;
-+            resets = <&cpg R9A09G057_DRPAI_ARESETN>;
-+            status = "disabled";
-+        };
++		drpai0: drpai@16800000 {
++			compatible = "renesas,rzv2h-drpai";
++			reg = <0 0x17000000 0 0x1000000>,
++				<0 0x16800000 0 0x400000>;
++			interrupts = <GIC_SPI 914 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 915 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 916 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 917 IRQ_TYPE_LEVEL_HIGH>;
++			resets = <&cpg R9A09G057_DRPAI_ARESETN>;
++			status = "disabled";
++		};
  	};
  
- 	timer {
+ 	thermal-zones {
 diff --git a/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts b/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts
-index dabe137..59d6fc3 100644
+index 0e89ef4..dd06a26 100644
 --- a/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts
 +++ b/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts
 @@ -661,3 +661,9 @@
@@ -31,12 +31,12 @@ index dabe137..59d6fc3 100644
  };
 +
 +&drpai0 {
-+    memory-region = <&drp_reserved>;
-+    image-memory-region = <&image_buf0>;
-+    status = "okay";
++	memory-region = <&drp_reserved>;
++	image-memory-region = <&image_buf0>;
++	status = "okay";
 +};
 diff --git a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts
-index 2970f26..54cd769 100644
+index b0c6159..e1bb04d 100644
 --- a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts
 +++ b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts
 @@ -1294,3 +1294,9 @@
@@ -45,23 +45,23 @@ index 2970f26..54cd769 100644
  };
 +
 +&drpai0 {
-+    memory-region = <&drp_reserved>;
-+    image-memory-region = <&image_buf0>;
-+    status = "okay";
++	memory-region = <&drp_reserved>;
++	image-memory-region = <&image_buf0>;
++	status = "okay";
 +};
 diff --git a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts
-index f7b6059..245121c 100644
+index 54892e5..627ac27 100644
 --- a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts
 +++ b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts
-@@ -1075,3 +1075,9 @@
- 
+@@ -1110,3 +1110,9 @@
+ &adc {
  	status = "okay";
  };
 +
 +&drpai0 {
-+    memory-region = <&drp_reserved>;
-+    image-memory-region = <&image_buf0>;
-+    status = "okay";
++	memory-region = <&drp_reserved>;
++	image-memory-region = <&image_buf0>;
++	status = "okay";
 +};
 diff --git a/drivers/Kconfig b/drivers/Kconfig
 index dcecc9f..4ac778b 100644
@@ -1945,14 +1945,14 @@ index 0000000..d3f7ef4
 +#endif /* DRPAI__H */
 diff --git b/drivers/drpai/drpai-if.c b/drivers/drpai/drpai-if.c
 new file mode 100644
-index 0000000..dbffd43
+index 0000000..f61c155
 --- /dev/null
 +++ b/drivers/drpai/drpai-if.c
 @@ -0,0 +1,4325 @@
 +/*
-+ * Driver for the Renesas RZ/V2H RZ/V2M RZ/V2MA RZ/V2L DRP-AI unit
++ * Driver for the Renesas RZ/V2H DRP-AI unit
 + *
-+ * Copyright (C) 2023 Renesas Electronics Corporation
++ * Copyright (C) 2024 Renesas Electronics Corporation
 + *
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -2019,7 +2019,7 @@ index 0000000..dbffd43
 +#endif
 +
 +/*Macro definitions*/
-+#define DRPAI_DRIVER_VERSION        "1.00 rel.6"
++#define DRPAI_DRIVER_VERSION        "1.01 rel.1"
 +#define DRPAI_DEV_NUM               (1)
 +#define DRPAI_DRIVER_NAME           "drpai"     /* Device name */
 +#define DRPAI_64BYTE_ALIGN          (0x3F)      /* Check 64-byte alignment */
