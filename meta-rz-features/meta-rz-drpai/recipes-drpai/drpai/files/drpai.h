@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 /*
- * Driver for the Renesas RZ/V2H DRP-AI unit
+ * Driver for the Renesas RZ/V2H, RZ/V2N DRP-AI unit
  *
- * Copyright (C) 2023 Renesas Electronics Corporation
+ * Copyright (C) 2024 Renesas Electronics Corporation
  *
  *
  * This program is free software; you can redistribute it and/or modify

@@ -34,5 +34,5 @@ $ MACHINE=rzv2h-evk-ver1 bitbake core-image-weston -c populate_sdk
 ~~~  
 When the above command is successfully completed, the following is generated.  
 $WORK/build/tmp/deploy/sdk  
-* poky-glibc-x86_64-core-image-weston-aarch64-rzv2h-evk-ver1-toolchain-3.1.26.sh  
+* poky-glibc-x86_64-core-image-weston-aarch64-rzv2h-evk-ver1-toolchain-3.1.31.sh  
 

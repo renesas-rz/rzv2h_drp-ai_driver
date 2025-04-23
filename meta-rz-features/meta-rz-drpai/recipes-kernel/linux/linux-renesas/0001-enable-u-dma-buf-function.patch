@@ -1,8 +1,8 @@
 diff --git a/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts b/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts
-index 57925d5..0e89ef4 100644
+index 67cc4a9..8524042 100644
 --- a/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts
 +++ b/arch/arm64/boot/dts/renesas/r9a09g057h4-dev.dts
-@@ -184,6 +184,15 @@
+@@ -190,6 +190,15 @@
  		regulator-max-microvolt = <1500000>;
  		regulator-always-on;
  	};
@@ -19,10 +19,10 @@ index 57925d5..0e89ef4 100644
  
  &pinctrl {
 diff --git a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts
-index 186fff2..b0c6159 100644
+index 4473f24..868e72e 100644
 --- a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts
 +++ b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-alpha.dts
-@@ -327,6 +327,15 @@
+@@ -333,6 +333,15 @@
  		};
  #endif
  	};
@@ -39,10 +39,10 @@ index 186fff2..b0c6159 100644
  
  &audio_clka {
 diff --git a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts
-index 46934db..54892e5 100644
+index af1731f..625f24e 100644
 --- a/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts
 +++ b/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dts
-@@ -309,6 +309,15 @@
+@@ -337,6 +337,15 @@
  		};
  #endif
  	};
