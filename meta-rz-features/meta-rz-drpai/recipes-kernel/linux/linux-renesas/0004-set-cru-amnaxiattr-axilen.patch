@@ -1,0 +1,13 @@
+diff --git a/drivers/media/platform/renesas/rzg2l-cru/rzg2l-cru-regs.h b/drivers/media/platform/renesas/rzg2l-cru/rzg2l-cru-regs.h
+index 2d740ee..4d7b09e 100644
+--- a/drivers/media/platform/renesas/rzg2l-cru/rzg2l-cru-regs.h
++++ b/drivers/media/platform/renesas/rzg2l-cru/rzg2l-cru-regs.h
+@@ -34,7 +34,7 @@
+ #define AMnMBS_MBSTS			0x7
+ 
+ #define AMnAXIATTR_AXILEN_MASK		GENMASK(3, 0)
+-#define AMnAXIATTR_AXILEN		(0xf)
++#define AMnAXIATTR_AXILEN		(0x6)
+ 
+ #define AMnFIFOPNTR_FIFOWPNTR		GENMASK(7, 0)
+ #define AMnFIFOPNTR_FIFOWPNTR_B0	AMnFIFOPNTR_FIFOWPNTR

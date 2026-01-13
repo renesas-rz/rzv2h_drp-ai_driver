@@ -24,7 +24,9 @@ None.
 <br>
 
 ## Installation  
-Please see [Installation](./installation/README.md).    
+This version of the DRP-AI driver is included in the RZ/V2H AI SDK v6.00.  
+Please refer [https://renesas-rz.github.io/rzv_ai_sdk/6.20/howto_build_aisdk_v2h.html](https://renesas-rz.github.io/rzv_ai_sdk/6.20/howto_build_aisdk_v2h.html) for installation instructions.  
+The DRP-AI driver is stored in ${YOCTO_WORK}/meta-rz-features/meta-rz-drpai.
 <br>
 
 ## Contents
@@ -373,7 +375,7 @@ When mode=DRPAI_ADRCONV_MODE_ADD(1), this function can be called to add a new se
 <img src=./img/Figure_4-2-5(5).png width=800>  
 
 #### [Remark]  
-The range specified by org_address and size, 0xFC00_0000 to 0xFFFFFF_FFFF, cannot be used because it is used by the DRP-AI Driver. Therefore, care should be taken not to use this area during DRP-AI translator i8 translation.  
+The range specified by org_address and size, 0xFC00_0000 to 0xFFFF_FFFF, cannot be used because it is used by the DRP-AI Driver. Therefore, care should be taken not to use this area during DRP-AI translator i8 translation.  
 When adding setting using DRPAI_ADRCONV_MODE_ADD, set org_address and conv_address so that they do not overlap with previous settings.
 <br>
 
@@ -458,7 +460,7 @@ Start AI inference.
 proc[] except proc[DRPAI_INDEX_INPUT] must be placed in the DRP-AI memory area.  
 proc[DRPAI_INDEX_INPUT] can be specified anywhere it is a continuous physical area.  
 However, when executing address conversion using the ioctl(DRPAI_SET_ADRCONV), proc[DRPAI_INDEX_INPUT] can only be placed in the area set by ioctl(DRPAI_SET_ADRCONV).  
-When the ioctl(DRPAI_PREPOST_INADDR) function is used to set the address of the input image data, proc[DRPAI_INDEX_INPUT] will be disabled. The invalidation period is until this driver is terminated using the close function..  
+When the ioctl(DRPAI_PREPOST_INADDR) function is used to set the address of the input image data, proc[DRPAI_INDEX_INPUT] will be disabled. The invalidation period is until this driver is terminated using the close function.  
 Refer to [4.3.1](#431-drpai_data_t) about drpai_data_t structure.  
 
 #### [Remark]  
@@ -860,7 +862,7 @@ None.
 |Type|Member name|Overview|
 |:---|:---|:---|
 |uint32_t   |org_address    |Address of before conversion.<br>- Valid only when mode != DRPAI_ADRCONV_MODE_DISABLE(0xFF)|
-|uint64_t   |conv_address   |Address of after conversion.<br>- Valid only when mode !=DRPAI_ADRCONV_MODE_DISABLE(0xFF)<br>- 40bit valid<br>- The lower 24 bits should be the same as conv_address.|
+|uint64_t   |conv_address   |Address of after conversion.<br>- Valid only when mode !=DRPAI_ADRCONV_MODE_DISABLE(0xFF)<br>- 40bit valid<br>- The lower 24 bits should be the same as org_address.|
 |uint32_t   |size           |Conversion Size.<br>- Valid only when mode !=DRPAI_ADRCONV_MODE_DISABLE(0xFF)|
 |uint8_t    |mode           |DRPAI_ADRCONV_MODE_REPLACE(0) : Enable address conversion, clear all conversion table that is set in previous and add new conversion table.<br>DRPAI_ADRCONV_MODE_ADD(1) : Enable address conversion and add new conversion table. (Old table is not cleared.)<br>DRPAI_ADRCONV_MODE_DISABLE(0xFF) : Clear all conversion table and disable address conversion.|
 
@@ -1005,22 +1007,15 @@ Device tree settings are shown as follows.
                          <GIC_SPI 915 IRQ_TYPE_LEVEL_HIGH>,
                          <GIC_SPI 916 IRQ_TYPE_LEVEL_HIGH>,
                          <GIC_SPI 917 IRQ_TYPE_LEVEL_HIGH>;
-            resets = <&cpg R9A09G057_DRPAI_ARESETN>;
+            resets = <&cpg 0xfd>;
             status = "disabled";
         };
 ```
 
-#### 5.3.2 DRP-AI part of r9a09g057h4-evk-ver1.dts
+#### 5.3.2 DRP-AI part of rzv2h-evk-common.dts
 ```
-        drp_reserved: DRP-AI@240000000 {
-            reusable;
-            reg = <0x2 0x40000000 0x0 0x20000000>;
-        };
-
         &drpai0 {
             memory-region = <&drp_reserved>;
-            image-memory-region = <&image_buf0>;
             status = "okay";
         };
-
 ```

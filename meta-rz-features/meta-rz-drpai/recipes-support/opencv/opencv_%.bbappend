@@ -1,2 +1,2 @@
-PACKAGECONFIG_append_pn-opencv = " gtk"
-PACKAGECONFIG_append_pn-nativesdk-opencv = " gtk"
+PACKAGECONFIG:append:pn-opencv = " gtk python3"
+PACKAGECONFIG:append:pn-nativesdk-opencv = " gtk"

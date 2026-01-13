@@ -1,0 +1,36 @@
+diff --git a/arch/arm64/boot/dts/renesas/r9a09g057.dtsi b/arch/arm64/boot/dts/renesas/r9a09g057.dtsi
+index 7c4120a..4d62d02 100644
+--- a/arch/arm64/boot/dts/renesas/r9a09g057.dtsi
++++ b/arch/arm64/boot/dts/renesas/r9a09g057.dtsi
+@@ -3518,6 +3518,18 @@
+ 				};
+ 			};
+ 		};
++
++		drpai0: drpai@16800000 {
++			compatible = "renesas,rzv2h-drpai";
++			reg = <0 0x17000000 0 0x1000000>,
++				<0 0x16800000 0 0x400000>;
++			interrupts = <GIC_SPI 914 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 915 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 916 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 917 IRQ_TYPE_LEVEL_HIGH>;
++			resets = <&cpg 0xfd>;
++			status = "disabled";
++		};
+ 	};
+ 
+ 	thermal-zones {
+diff --git a/arch/arm64/boot/dts/renesas/rzv2h-evk-common.dtsi b/arch/arm64/boot/dts/renesas/rzv2h-evk-common.dtsi
+index f36d670..50c7029 100644
+--- a/arch/arm64/boot/dts/renesas/rzv2h-evk-common.dtsi
++++ b/arch/arm64/boot/dts/renesas/rzv2h-evk-common.dtsi
+@@ -1415,3 +1415,8 @@
+ 	status = "okay";
+ };
+ #endif
++
++&drpai0 {
++	memory-region = <&drp_reserved>;
++	status = "okay";
++};

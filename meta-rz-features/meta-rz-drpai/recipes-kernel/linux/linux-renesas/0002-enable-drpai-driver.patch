@@ -1,22 +1,22 @@
 diff --git a/drivers/Kconfig b/drivers/Kconfig
-index dcecc9f..4ac778b 100644
+index 04a20db..5ee8129 100644
 --- a/drivers/Kconfig
 +++ b/drivers/Kconfig
-@@ -235,4 +235,6 @@ source "drivers/interconnect/Kconfig"
- source "drivers/counter/Kconfig"
+@@ -241,4 +241,6 @@ source "drivers/peci/Kconfig"
  
- source "drivers/most/Kconfig"
-+
+ source "drivers/hte/Kconfig"
+ 
 +source "drivers/drpai/Kconfig"
++
  endmenu
 diff --git a/drivers/Makefile b/drivers/Makefile
-index 5762280..354b8fd 100644
+index 9fc91d2..96c402f 100644
 --- a/drivers/Makefile
 +++ b/drivers/Makefile
-@@ -189,3 +189,4 @@ obj-$(CONFIG_GNSS)		+= gnss/
- obj-$(CONFIG_INTERCONNECT)	+= interconnect/
- obj-$(CONFIG_COUNTER)		+= counter/
+@@ -190,3 +190,4 @@ obj-$(CONFIG_COUNTER)		+= counter/
  obj-$(CONFIG_MOST)		+= most/
+ obj-$(CONFIG_PECI)		+= peci/
+ obj-$(CONFIG_HTE)		+= hte/
 +obj-$(CONFIG_DRPAI)		+= drpai/
 diff --git b/drivers/drpai/Kconfig b/drivers/drpai/Kconfig
 new file mode 100644
@@ -40,16 +40,19 @@ index 0000000..ccbf90a
 +endmenu
 diff --git b/drivers/drpai/Makefile b/drivers/drpai/Makefile
 new file mode 100644
-index 0000000..6358959
+index 0000000..4bb42dc
 --- /dev/null
 +++ b/drivers/drpai/Makefile
-@@ -0,0 +1,10 @@
+@@ -0,0 +1,13 @@
 +# SPDX-License-Identifier: GPL-2.0
 +#
 +# Makefile for DRP-AI/DRP.
 +#
++ccflags-y := -Werror
 +
 +ifdef CONFIG_ARCH_R9A09G056
++CFLAGS_lock_drpai.o += -Wall -mno-outline-atomics
++LDFLAGS_lock_drpai.o += -lgcc
 +obj-$(CONFIG_DRPAI)	+= drpai-core.o drpai-if.o lock_drpai.o
 +else
 +obj-$(CONFIG_DRPAI)	+= drpai-core.o drpai-if.o
@@ -1922,10 +1925,10 @@ index 0000000..4c17539
 +#endif /* DRPAI__H */
 diff --git b/drivers/drpai/drpai-if.c b/drivers/drpai/drpai-if.c
 new file mode 100644
-index 0000000..1745ce9
+index 0000000..1804149
 --- /dev/null
 +++ b/drivers/drpai/drpai-if.c
-@@ -0,0 +1,4694 @@
+@@ -0,0 +1,4759 @@
 +/*
 + * Driver for the Renesas RZ/V2H, RZ/V2N DRP-AI unit
 + *
@@ -1973,6 +1976,7 @@ index 0000000..1745ce9
 +#include <linux/delay.h>
 +#include <linux/clk.h>
 +#include <linux/reset.h>
++#include <linux/version.h>
 +#include <linux/drpai.h>    /* Header file for DRP-AI Driver */
 +#include "drpai-core.h"     /* Header file for DRP-AI Core */
 +#include "lock_drpai.h"     /* To use for exclusion control of DRP-AI with shared memory */
@@ -1997,7 +2001,7 @@ index 0000000..1745ce9
 +#endif
 +
 +/*Macro definitions*/
-+#define DRPAI_DRIVER_VERSION        "1.20 rel.3"
++#define DRPAI_DRIVER_VERSION        "1.31 rel.1"
 +#define DRPAI_DEV_NUM               (1)
 +#define DRPAI_DRIVER_NAME           "drpai"     /* Device name */
 +#define DRPAI_64BYTE_ALIGN          (0x3F)      /* Check 64-byte alignment */
@@ -2107,6 +2111,9 @@ index 0000000..1745ce9
 +static int drpai_probe(struct platform_device *pdev);
 +static int drpai_remove(struct platform_device *pdev);
 +static int drpai_open(struct inode *inode, struct file *file);
++#ifdef ENABLE_DRP_SUPPORT_SHARED_MEMORY
++static void drpai_shutdown(struct platform_device *pdev);
++#endif
 +static int drpai_close(struct inode *inode, struct file *file);
 +static int drpai_flush(struct file *file, fl_owner_t id);
 +static ssize_t  drpai_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos);
@@ -2319,6 +2326,9 @@ index 0000000..1745ce9
 +    },
 +    .probe      = drpai_probe,
 +    .remove     = drpai_remove,
++#ifdef ENABLE_DRP_SUPPORT_SHARED_MEMORY
++    .shutdown   = drpai_shutdown,
++#endif
 +};
 +
 +static int drpai_probe(struct platform_device *pdev)
@@ -2356,6 +2366,42 @@ index 0000000..1745ce9
 +
 +    return 0;
 +}
++
++#ifdef ENABLE_DRP_SUPPORT_SHARED_MEMORY
++static void drpai_shutdown(struct platform_device *pdev)
++{
++    int flag_ret = 0;
++    DRPAI_DEBUG_PRINT("start.\n");
++
++    drpai_shared_exclusion = phys_to_virt(drpai_shared_base_addr);
++    flag_ret = R_DRPAI_IsSharedMemoryInitialized(drpai_shared_exclusion);
++    if(-1 == flag_ret)
++    {
++        // If not cleared shared memory, clear the shared memory
++        if(0 != R_DRPAI_ClearHashArea(drpai_shared_exclusion))
++        {
++            dev_err(&pdev->dev, "Failed to clear the shared memory region. Power off the board to reset the memory and then boot the board again.");
++        }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,1)
++        dcache_clean_inval_poc((unsigned long)drpai_shared_exclusion, (unsigned long)drpai_shared_exclusion + drpai_shared_size);
++#else
++        __flush_dcache_area(drpai_shared_exclusion, drpai_shared_size);
++#endif
++        dev_info(&pdev->dev, "Shared memory region has cleared.");
++    }
++    else
++    {
++        // If cleared shared memory
++        dev_info(&pdev->dev, "Shared memory region has already cleared.");
++    }
++    
++    DRPAI_DEBUG_PRINT("end.\n");
++    
++    goto end;
++end:
++    return;
++}
++#endif
 +
 +static int drpai_open(struct inode *inode, struct file *file)
 +{
@@ -2721,7 +2767,11 @@ index 0000000..1745ce9
 +                    result = -EFAULT;
 +                    goto end;
 +                }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,1)
++                dcache_clean_inval_poc((unsigned long)p_drpai_cma, (unsigned long)p_drpai_cma + drpai_rw_status->drpai_data.size);
++#else
 +                __flush_dcache_area((void *)p_drpai_cma, drpai_rw_status->drpai_data.size);
++#endif
 +                drpai_rw_status->rw_status = DRPAI_STATUS_IDLE_RW;
 +                DRPAI_DEBUG_PRINT("Deleted list %px rw_status %d prev %px next %px\n", &drpai_rw_status->list, drpai_rw_status->rw_status, drpai_rw_status->list.prev, drpai_rw_status->list.next);
 +                list_del(&drpai_rw_status->list);
@@ -2774,7 +2824,7 @@ index 0000000..1745ce9
 +    uint8_t *kbuf = NULL;
 +    volatile void *p_drpai_cma = 0;
 +    uint32_t reg_val;
-+    uint32_t i;
++    uint32_t i = 0;
 +    struct drpai_rw_status *drpai_rw_status = filp->private_data;
 +    struct drpai_priv *priv = drpai_priv;
 +    uint64_t addr;
@@ -3709,6 +3759,7 @@ index 0000000..1745ce9
 +    }
 +    else
 +    {
++        R_DRPAI_ClearFlagManagementArea(drpai_shared_exclusion);
 +        R_DRPAI_InitializeSharedMemory(drpai_shared_exclusion);
 +        dev_info(&pdev->dev, "Initilize shared memory region to be used in exclusive control of DRP-AI.");
 +    }
@@ -3994,7 +4045,12 @@ index 0000000..1745ce9
 +        result = -EFAULT;
 +        goto end;
 +    }
++    // The cache is disabled for the initial access to read from memory.
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,1)
++    dcache_inval_poc((unsigned long)p_virt_address, (unsigned long)p_virt_address + drpai_data_buf.size);
++#else
 +    __inval_dcache_area((void *)p_virt_address, drpai_data_buf.size);
++#endif
 +
 +    /* Initialization of read / write processing variables */
 +    drpai_rw_status->drpai_data  = drpai_data_buf;
@@ -4808,7 +4864,11 @@ index 0000000..1745ce9
 +        goto end;
 +    }
 +    iowrite16(value, (void *)virt_addr);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,1)
++    dcache_clean_inval_poc((unsigned long)virt_addr, (unsigned long)virt_addr + sizeof(value));
++#else
 +    __flush_dcache_area((void *)virt_addr, sizeof(value));
++#endif
 +end:
 +    DRPAI_DEBUG_PRINT("end.\n");
 +
@@ -4828,7 +4888,11 @@ index 0000000..1745ce9
 +        goto end;
 +    }
 +    iowrite32(value, (void *)virt_addr);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,1)
++    dcache_clean_inval_poc((unsigned long)virt_addr, (unsigned long)virt_addr + sizeof(value));
++#else
 +    __flush_dcache_area((void *)virt_addr, sizeof(value));
++#endif
 +end:
 +    DRPAI_DEBUG_PRINT("end.\n");
 +
@@ -5064,7 +5128,11 @@ index 0000000..1745ce9
 +            result = -1;
 +            goto end;
 +        }
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,1)
++        dcache_clean_inval_poc((unsigned long)p_input, (unsigned long)p_input + flush_size);
++#else
 +        __flush_dcache_area((void *)p_input, flush_size);
++#endif
 +    }
 +end:
 +    DRPAI_DEBUG_PRINT("end.\n");
@@ -6622,7 +6690,7 @@ index 0000000..1745ce9
 +MODULE_LICENSE("GPL v2");
 diff --git b/drivers/drpai/drpai-reg.h b/drivers/drpai/drpai-reg.h
 new file mode 100644
-index 0000000..fc7fd57
+index 0000000..c22391a
 --- /dev/null
 +++ b/drivers/drpai/drpai-reg.h
 @@ -0,0 +1,1053 @@
@@ -7617,7 +7685,7 @@ index 0000000..fc7fd57
 +#define CPG_PLLETH_MON_REG          (0x0B0uLL)
 +
 +// MSTOP
-+#define CPG_BUS_8_MSTOP_REG         (0xD1CuLL)     // 0=module operating(initial),1=stopÅF[8]=AIMAC, [9]=STP, [10]=DRP
++#define CPG_BUS_8_MSTOP_REG         (0xD1CuLL)     // 0=module operating(initial),1=stop : [8]=AIMAC, [9]=STP, [10]=DRP
 +#define CPG_BUS_9_MSTOP_REG         (0xD20uLL)
 +
 +// BUS
@@ -7681,10 +7749,10 @@ index 0000000..fc7fd57
 +#endif /* DRPAI_REG__H */
 diff --git b/drivers/drpai/lock_drpai.c b/drivers/drpai/lock_drpai.c
 new file mode 100644
-index 0000000..84111f4
+index 0000000..c0b8766
 --- /dev/null
 +++ b/drivers/drpai/lock_drpai.c
-@@ -0,0 +1,543 @@
+@@ -0,0 +1,592 @@
 +/*
 + * Driver for the Renesas RZ/V2H, RZ/V2N DRP-AI unit
 + *
@@ -7700,7 +7768,7 @@ index 0000000..84111f4
 + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 + * GNU General Public License for more details.
 + */
-+#include <stddef.h>
++#include <linux/stddef.h>
 +#include <linux/device.h>
 +#include <linux/delay.h>
 +#include "lock_drpai.h"
@@ -8153,7 +8221,7 @@ index 0000000..84111f4
 + * @retval 0 Successfully initialize a shared memory. Shared memory has not yet been initialized,
 + *           but the HASH values were successfully written.
 + * @retval -2 Invalid argument is set.
-+ * @note Write 0 to FLAG_MANAGE_MEMORY area. Write HASH to HASH_TOP_STORE_MEMORY and HASH_BOTTOM_STORE_MEMORY.
++ * @note Write HASH to HASH_TOP_STORE_MEMORY and HASH_BOTTOM_STORE_MEMORY.
 +*/
 +int R_DRPAI_InitializeSharedMemory(unsigned long long *addr)
 +{
@@ -8171,7 +8239,56 @@ index 0000000..84111f4
 +    *(addr+HASH_TOP_STORE_MEMORY) = (*(addr+HASH_TOP_STORE_MEMORY) | INIT_HASH_TOP_VAL);
 +    *(addr+HASH_BOTTOM_STORE_MEMORY) = (*(addr+HASH_BOTTOM_STORE_MEMORY) | INIT_HASH_BOTTOM_VAL);
 +
-+    *(addr+FLAG_MANAGE_MEMORY) = 0;
++    goto end;
++end:
++    return result;
++}
++
++/** Clear the flag management area in a shared memory.
++ * @param addr Base address for a shared memory.
++ * @return Whether this function succeeded or not
++ * @retval 0 Successfully clear a shared memory. Write 0 to shared memory.
++ * @retval -2 Invalid argument is set.
++ * @note Write 0 to FLAG_MANAGE_MEMORY area.
++*/
++int R_DRPAI_ClearFlagManagementArea(unsigned long long *addr)
++{
++    int result = 0;
++
++    /* Check Arguments. */
++    if (NULL == addr) 
++    {
++        result = -2;
++        goto end;
++    }
++
++    *(addr+FLAG_MANAGE_MEMORY) = 0uLL;
++
++    goto end;
++end:
++    return result;
++}
++
++/** Clear the hash area in a shared memory.
++ * @param addr Base address for a shared memory.
++ * @return Whether this function succeeded or not
++ * @retval 0 Successfully clear a shared memory. Write 0 to shared memory.
++ * @retval -2 Invalid argument is set.
++ * @note Write 0 to HASH_TOP_STORE_MEMORY and HASH_BOTTOM_STORE_MEMORY.
++*/
++int R_DRPAI_ClearHashArea(unsigned long long *addr)
++{
++    int result = 0;
++
++    /* Check Arguments. */
++    if (NULL == addr) 
++    {
++        result = -2;
++        goto end;
++    }
++
++    *(addr+HASH_TOP_STORE_MEMORY) = 0uLL;
++    *(addr+HASH_BOTTOM_STORE_MEMORY) = 0uLL;
 +
 +    goto end;
 +end:
@@ -8230,10 +8347,10 @@ index 0000000..84111f4
 +}
 diff --git b/drivers/drpai/lock_drpai.h b/drivers/drpai/lock_drpai.h
 new file mode 100644
-index 0000000..13e9190
+index 0000000..830c7cf
 --- /dev/null
 +++ b/drivers/drpai/lock_drpai.h
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,69 @@
 +/*
 + * Driver for the Renesas RZ/V2H, RZ/V2N DRP-AI unit
 + *
@@ -8292,6 +8409,8 @@ index 0000000..13e9190
 +                                    unsigned int context);
 +int R_DRPAI_IsDrpaiHwStatusActive(unsigned long long *addr);
 +int R_DRPAI_InitializeSharedMemory(unsigned long long *addr);
++int R_DRPAI_ClearFlagManagementArea(unsigned long long *addr);
++int R_DRPAI_ClearHashArea(unsigned long long *addr);
 +int R_DRPAI_IsSharedMemoryInitialized(unsigned long long *addr);
 +struct reset_control * R_DRPAI_GetResetContPointerFromSharedMemory(unsigned long long *addr);
 +int R_DRPAI_SetResetContPointerToSharedMemory(unsigned long long *addr, struct reset_control * rstc);

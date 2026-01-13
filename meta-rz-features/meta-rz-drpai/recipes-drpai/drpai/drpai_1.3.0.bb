@@ -7,6 +7,10 @@ SECTION = "libs"
 DEPENDS = ""
 LICENSE = "GPL-2.0-WITH-Linux-syscall-note"
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
+NO_GENERIC_LICENSE[GPL-2.0-WITH-Linux-syscall-note] = "COPYING"
+COPY_LIC_MANIFEST = "1"
+COPY_LIC_DIRS = "1"
+LICENSE_CREATE_PACKAGE = "1"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 PACKAGES = "${PN}"
@@ -15,12 +19,12 @@ PROVIDES = "${PN}"
 PR = "r1"
 
 SRC_URI = " \
-    file://COPYING \
+    file://COPYING;md5sum=6bc538ed5bd9a7fc9398086aedcd7e46 \
     file://drpai.h \
     "
 
 # The list of directories or files that are placed in packages.
-FILES_${PN} = " \
+FILES:${PN} = " \
     ${includedir}/linux/drpai.h \
     "
 
