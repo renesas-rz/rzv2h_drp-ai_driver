@@ -24,7 +24,7 @@ index fab731c..3fb2ff3 100644
 +			goto exit;
 +		}
 +		dma_sync_single_for_device(mm_dev, p->hard_addr + cache.offset,
-+					   cache.len, DMA_FROM_DEVICE);
++					   cache.len, DMA_TO_DEVICE);
  		break;
  	case MM_IOC_INVAL:
 -		cachep = (struct MM_CACHE_PARAM *)arg;
@@ -36,7 +36,7 @@ index fab731c..3fb2ff3 100644
 +			goto exit;
 +		}
 +		dma_sync_single_for_cpu(mm_dev, p->hard_addr + cache.offset,
-+					cache.len, DMA_TO_DEVICE);
++					cache.len, DMA_FROM_DEVICE);
  		break;
  	case MM_IOC_VTOP:   /* change virtual address to physical address */
  		{
