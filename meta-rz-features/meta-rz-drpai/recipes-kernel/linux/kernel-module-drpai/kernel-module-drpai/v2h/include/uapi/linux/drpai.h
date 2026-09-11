@@ -70,6 +70,7 @@
 #define DRPAI_ERRINFO_DRP_ERR               (-1)
 #define DRPAI_ERRINFO_AIMAC_ERR             (-2)
 #define DRPAI_ERRINFO_RESET                 (-3)
+#define DRPAI_ERRINFO_SUSPEND               (-4)
 #define DRPAI_RESERVED_NUM                  (32)
 #define DRPAI_SEQ_NUM                       (20)
 #define DRPAI_EXE_AI                        (1)

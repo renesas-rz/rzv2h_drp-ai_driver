@@ -1,0 +1,178 @@
+diff --git a/plat/renesas/rz/soc/v2n/bl31_plat_setup.c b/plat/renesas/rz/soc/v2n/bl31_plat_setup.c
+index 5b8ecd9..179ab78 100755
+--- a/plat/renesas/rz/soc/v2n/bl31_plat_setup.c
++++ b/plat/renesas/rz/soc/v2n/bl31_plat_setup.c
+@@ -20,6 +20,8 @@
+ static console_t rzv2n_bl31_console;
+ static bl2_to_bl31_params_mem_t from_bl2;
+ 
++static void board_gpv_drp_setting(void);
++
+ #ifdef PLAT_EXTRA_LD_SCRIPT
+ IMPORT_SYM(uintptr_t, __BL31_PMUSRAM_START__, BL31_PMUSRAM_START);
+ IMPORT_SYM(uintptr_t, __BL31_PMUSRAM_END__, BL31_PMUSRAM_END);
+@@ -110,6 +112,8 @@ void bl31_platform_setup(void)
+ 	plat_gic_init();
+ 
+ 	pwrc_setup();
++
++    board_gpv_drp_setting();
+ }
+ 
+ entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
+@@ -124,3 +128,80 @@ entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
+ 	else
+ 		return NULL;
+ }
++
++static void board_gpv_drp_setting(void)
++{
++//MAC_M*0
++	(*(volatile uint32_t *)(0x1904410C)) = 0x00000063;
++	(*(volatile uint32_t *)(0x19044110)) = 0x20002000;
++	(*(volatile uint32_t *)(0x19044118)) = 0x00000000;
++	(*(volatile uint32_t *)(0x1904411C)) = 0x00000001;
++	(*(volatile uint32_t *)(0x19044120)) = 0x02000000;   // test point
++	(*(volatile uint32_t *)(0x19044124)) = 0x00000000;
++	(*(volatile uint32_t *)(0x19044128)) = 0x00000001;
++	(*(volatile uint32_t *)(0x1904412C)) = 0x02000000;   // test point
++
++//MAC_M*1
++	(*(volatile uint32_t *)(0x1904510C)) = 0x00000063;
++	(*(volatile uint32_t *)(0x19045110)) = 0x20002000;
++	(*(volatile uint32_t *)(0x19045118)) = 0x00000000;
++	(*(volatile uint32_t *)(0x1904511C)) = 0x00000001;
++	(*(volatile uint32_t *)(0x19045120)) = 0x10000000;
++	(*(volatile uint32_t *)(0x19045124)) = 0x00000000;
++	(*(volatile uint32_t *)(0x19045128)) = 0x00000001;
++	(*(volatile uint32_t *)(0x1904512C)) = 0x10000000;
++
++//MACWT_M*0
++	(*(volatile uint32_t *)(0x1904610C)) = 0x00000063;
++	(*(volatile uint32_t *)(0x19046110)) = 0x20002000;
++	(*(volatile uint32_t *)(0x19046118)) = 0x00000000;
++	(*(volatile uint32_t *)(0x1904611C)) = 0x00000001;
++	(*(volatile uint32_t *)(0x19046120)) = 0x10000000;
++	(*(volatile uint32_t *)(0x19046124)) = 0x00000000;
++	(*(volatile uint32_t *)(0x19046128)) = 0x00000001;
++	(*(volatile uint32_t *)(0x1904612C)) = 0x10000000;
++
++//MACWT_M*01
++	(*(volatile uint32_t *)(0x1904710C)) = 0x00000063;
++	(*(volatile uint32_t *)(0x19047110)) = 0x20002000;
++	(*(volatile uint32_t *)(0x19047118)) = 0x00000000;
++	(*(volatile uint32_t *)(0x1904711C)) = 0x00000001;
++	(*(volatile uint32_t *)(0x19047120)) = 0x10000000;
++	(*(volatile uint32_t *)(0x19047124)) = 0x00000000;
++	(*(volatile uint32_t *)(0x19047128)) = 0x00000001;
++	(*(volatile uint32_t *)(0x1904712C)) = 0x10000000;
++
++//GPV ACPU
++	(*(volatile uint32_t *)(0x14a44124)) = 0x00000000;
++	(*(volatile uint32_t *)(0x14a44128)) = 0x00000001;
++	(*(volatile uint32_t *)(0x14a4412c)) = 0x11000000;
++	(*(volatile uint32_t *)(0x14a4410c)) = 0x00000002;
++
++//GPV_VIDEO1
++	(*(volatile uint32_t *)(0x1654210C)) = 0x00000018;
++	(*(volatile uint32_t *)(0x16542130)) = 0x000A000A;
++	(*(volatile uint32_t *)(0x16542134)) = 0x00000000;
++	(*(volatile uint32_t *)(0x16542138)) = 0x06040604;
++
++	(*(volatile uint32_t *)(0x1654310C)) = 0x00000018;
++	(*(volatile uint32_t *)(0x16543130)) = 0x00640064;
++	(*(volatile uint32_t *)(0x16543134)) = 0x00000202;
++	(*(volatile uint32_t *)(0x16543138)) = 0x05040504;
++
++	(*(volatile uint32_t *)(0x1654410C)) = 0x00000018;
++	(*(volatile uint32_t *)(0x16544130)) = 0x00640064;
++	(*(volatile uint32_t *)(0x16544134)) = 0x00000202;
++	(*(volatile uint32_t *)(0x16544138)) = 0x05040504;
++
++	(*(volatile uint32_t *)(0x1654510C)) = 0x00000018;
++	(*(volatile uint32_t *)(0x16545130)) = 0x00640064;
++	(*(volatile uint32_t *)(0x16545134)) = 0x00000202;
++	(*(volatile uint32_t *)(0x16545138)) = 0x05040504;
++
++//GPV_VIDEO0
++	(*(volatile uint32_t *)(0x1614a124)) = 0x00000000;
++	(*(volatile uint32_t *)(0x1614a128)) = 0x00000001;
++	(*(volatile uint32_t *)(0x1614a12c)) = 0x04f00000;
++	(*(volatile uint32_t *)(0x1614a10c)) = 0x00000002;
++	return;
++}
+diff --git a/plat/renesas/rz/soc/v2n/drivers/ddr/ddr_param_def_lpddr4.c b/plat/renesas/rz/soc/v2n/drivers/ddr/ddr_param_def_lpddr4.c
+index e200fd1..0154070 100755
+--- a/plat/renesas/rz/soc/v2n/drivers/ddr/ddr_param_def_lpddr4.c
++++ b/plat/renesas/rz/soc/v2n/drivers/ddr/ddr_param_def_lpddr4.c
+@@ -35415,9 +35415,9 @@ const uint32_t param_setup_mc[][2] = {
+ 	{0x017c, 0x00000008},
+ 	{0x017d, 0x02030306},
+ 	{0x017e, 0x01000101},
+-	{0x017f, 0x01000304},
++	{0x017f, 0x01000202},
+ 	{0x0180, 0x01000304},
+-	{0x0181, 0x01000304},
++	{0x0181, 0x01000505},
+ 	{0x0182, 0x01000304},
+ 	{0x0183, 0x00000304},
+ 	{0x0184, 0x00000000},
+@@ -35749,10 +35749,10 @@ const uint32_t param_setup_mc[][2] = {
+ 	{0x02ca, 0xffffffff},
+ 	{0x02cb, 0x000f000f},
+ 	{0x02cc, 0x01000000},
+-	{0x02cd, 0x01010101},
++    {0x02cd, 0x01010401},
+ 	{0x02ce, 0x00010101},
+-	{0x02cf, 0x01010064},
+-	{0x02d0, 0x01010101},
++	{0x02cf, 0x0301000a},
++	{0x02d0, 0x01010102},
+ 	{0x02d1, 0x00010101},
+ 	{0x02d2, 0x01010064},
+ 	{0x02d3, 0x01010101},
+@@ -36119,8 +36119,8 @@ const uint32_t param_setup_mc[][2] = {
+ 	{0x0131, 0x000fff00},
+ 	{0x0132, 0xffff8000},
+ 	{0x0133, 0x000fff00},
+-	{0x0134, 0xff0b0000},
+-	{0x0135, 0x010001ff},
++	{0x0134, 0x1f0b0000},
++	{0x0135, 0x0101011f},
+ 	{0x0136, 0x01010101},
+ 	{0x0137, 0x1b010101},
+ 	{0x0138, 0x03000001},
+@@ -36187,16 +36187,16 @@ const uint32_t param_setup_mc[][2] = {
+ 	{0x0175, 0x03050800},
+ 	{0x0176, 0x02020101},
+ 	{0x0177, 0x0c050c18},
+-	{0x0178, 0x0a020808},
++	{0x0178, 0x0a000808},
+ 	{0x0179, 0x0b010405},
+ 	{0x017a, 0x08011000},
+ 	{0x017b, 0x0b080e00},
+ 	{0x017c, 0x00000008},
+ 	{0x017d, 0x02030306},
+ 	{0x017e, 0x00000101},
+-	{0x017f, 0x00000404},
++	{0x017f, 0x00000202},
+ 	{0x0180, 0x00000404},
+-	{0x0181, 0x00000404},
++	{0x0181, 0x01000505},
+ 	{0x0182, 0x00000404},
+ 	{0x0183, 0x00000404},
+ 	{0x0184, 0x00000000},
+@@ -36528,10 +36528,10 @@ const uint32_t param_setup_mc[][2] = {
+ 	{0x02ca, 0xffffffff},
+ 	{0x02cb, 0x000f000f},
+ 	{0x02cc, 0x01000000},
+-	{0x02cd, 0x01010101},
++    {0x02cd, 0x01010401},
+ 	{0x02ce, 0x00010101},
+-	{0x02cf, 0x01010064},
+-	{0x02d0, 0x01010101},
++	{0x02cf, 0x0301000a},
++	{0x02d0, 0x01010102},
+ 	{0x02d1, 0x00010101},
+ 	{0x02d2, 0x01010064},
+ 	{0x02d3, 0x01010101},

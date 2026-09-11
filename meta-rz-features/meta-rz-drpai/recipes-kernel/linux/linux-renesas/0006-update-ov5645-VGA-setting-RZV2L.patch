@@ -1,0 +1,37 @@
+From a8b148f8c78e61d1217e335d72db36938cda50d6 Mon Sep 17 00:00:00 2001
+From: Tai Huynh <tai.huynh.cp@renesas.com>
+Date: Mon, 4 Aug 2025 19:07:47 +0700
+Subject: [PATCH 5/9] update: ov5645: VGA: setting
+
+Signed-off-by: Tai Huynh <tai.huynh.cp@renesas.com>
+---
+ drivers/media/i2c/ov5645.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/media/i2c/ov5645.c b/drivers/media/i2c/ov5645.c
+index 434680a9a39e..c729868f7f8e 100644
+--- a/drivers/media/i2c/ov5645.c
++++ b/drivers/media/i2c/ov5645.c
+@@ -397,14 +397,14 @@ static const struct reg_value ov5645_setting_VGA_640_480[] = {
+ 	{ 0x3601, 0x43 },
+ 	{ 0x3708, 0x66 },
+ 	{ 0x370c, 0xc3 },
+-	{ 0x3800, 0x00 },
+-	{ 0x3801, 0x00 },
+-	{ 0x3802, 0x00 },
+-	{ 0x3803, 0x04 },
++	{ 0x3800, 0x02 },
++	{ 0x3801, 0x80 },
++	{ 0x3802, 0x01 },
++	{ 0x3803, 0xd4 },
+ 	{ 0x3804, 0x0a },
+ 	{ 0x3805, 0x3f },
+ 	{ 0x3806, 0x07 },
+-	{ 0x3807, 0x9b },
++	{ 0x3807, 0xeb },
+ 	{ 0x3808, 0x02 },
+ 	{ 0x3809, 0x80 },
+ 	{ 0x380a, 0x01 },
+-- 
+2.34.1
+

@@ -1,0 +1,52 @@
+diff --git b/arch/arm64/boot/dts/renesas/r9a09g056-drpai.dtsi b/arch/arm64/boot/dts/renesas/r9a09g056-drpai.dtsi
+new file mode 100644
+index 0000000..1427b60
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/r9a09g056-drpai.dtsi
+@@ -0,0 +1,15 @@
++/ {
++	soc: soc {
++		drpai0: drpai@16800000 {
++			compatible = "renesas,rzv2n-drpai";
++			reg = <0 0x17000000 0 0x1000000>,
++				<0 0x16800000 0 0x400000>;
++			interrupts = <GIC_SPI 914 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 915 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 916 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 917 IRQ_TYPE_LEVEL_HIGH>;
++			resets = <&cpg 0xfd>;
++			status = "disabled";
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/renesas/r9a09g056.dtsi b/arch/arm64/boot/dts/renesas/r9a09g056.dtsi
+index 8b7fce0..00d6b76 100644
+--- a/arch/arm64/boot/dts/renesas/r9a09g056.dtsi
++++ b/arch/arm64/boot/dts/renesas/r9a09g056.dtsi
+@@ -3386,3 +3386,5 @@
+ 		interrupt-names = "sec-phys", "phys", "virt", "hyp-phys", "hyp-virt";
+ 	};
+ };
++
++#include "r9a09g056-drpai.dtsi"
+diff --git b/arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk-drpai.dtsi b/arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk-drpai.dtsi
+new file mode 100644
+index 0000000..156043f
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk-drpai.dtsi
+@@ -0,0 +1,5 @@
++&drpai0 {
++	memory-region = <&drp_reserved>;
++	memory-shared-for-drpai-ext-cont = <&shared_drp_reserved>;
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk.dts b/arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk.dts
+index eefca70..917ccd4 100644
+--- a/arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk.dts
++++ b/arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk.dts
+@@ -1505,3 +1505,5 @@
+ 	status = "okay";
+ };
+ #endif
++
++#include "r9a09g056n48-rzv2n-evk-drpai.dtsi"

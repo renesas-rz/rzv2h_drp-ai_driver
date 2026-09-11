@@ -1,0 +1,22 @@
+diff --git a/drivers/media/platform/renesas/rzg2l-cru/rzg2l-video.c b/drivers/media/platform/renesas/rzg2l-cru/rzg2l-video.c
+index de8eb9d..4d62e5a 100644
+--- a/drivers/media/platform/renesas/rzg2l-cru/rzg2l-video.c
++++ b/drivers/media/platform/renesas/rzg2l-cru/rzg2l-video.c
+@@ -385,6 +385,7 @@ static void rzg2l_cru_initialize_axi(struct rzg2l_cru_dev *cru)
+ {
+ 	const struct rzg2l_cru_info *info = cru->info;
+ 	unsigned int slot;
++	u32 reg;
+ 
+ 	/*
+ 	 * Set image data memory banks.
+@@ -408,6 +409,9 @@ static void rzg2l_cru_initialize_axi(struct rzg2l_cru_dev *cru)
+ 		amnis = rzg2l_cru_read(cru, AMnIS) & ~AMnIS_IS_MASK;
+ 		rzg2l_cru_write(cru, AMnIS, amnis | AMnIS_IS(stride));
+ 	}
++
++	reg = rzg2l_cru_read(cru, AMnAXIATTR) & ~(GENMASK(3, 0));
++	rzg2l_cru_write(cru, AMnAXIATTR, reg | 0x6);
+ }
+ 
+ void rzg3e_cru_csi2_setup(struct rzg2l_cru_dev *cru,

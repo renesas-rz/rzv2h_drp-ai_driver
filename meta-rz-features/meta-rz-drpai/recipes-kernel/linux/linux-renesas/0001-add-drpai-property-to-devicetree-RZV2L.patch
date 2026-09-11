@@ -1,0 +1,114 @@
+diff --git b/arch/arm64/boot/dts/renesas/r9a07g054-drpai.dtsi b/arch/arm64/boot/dts/renesas/r9a07g054-drpai.dtsi
+new file mode 100644
+index 0000000..8255d2b
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/r9a07g054-drpai.dtsi
+@@ -0,0 +1,23 @@
++/ {
++	soc: soc {
++		drpai0: drpai@12C00000 {
++			compatible = "renesas,rzv2l-drpai";
++			reg = <0 0x13000000 0 0x1000000>,
++				<0 0x12C00000 0 0x400000>;
++			clocks = <&cpg CPG_MOD R9A07G054_STPAI_INITCLK>,
++				<&cpg CPG_MOD R9A07G054_STPAI_ACLK>,
++				<&cpg CPG_MOD R9A07G054_STPAI_MCLK>,
++				<&cpg CPG_MOD R9A07G054_STPAI_DCLKIN>,
++				<&cpg CPG_MOD R9A07G054_STPAI_ACLK_DRP>;
++			resets = <&cpg R9A07G054_STPAI_ARESETN>;
++			power-domains = <&cpg>;
++			sysctrl = <&sysc>;
++			clock-names = "intclk","aclk_drp","mclk","dclkin","aclk";
++			interrupts = <GIC_SPI 440 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 441 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 442 IRQ_TYPE_LEVEL_HIGH>,
++				<GIC_SPI 443 IRQ_TYPE_LEVEL_HIGH>;
++			status = "okay";
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/renesas/r9a07g054.dtsi b/arch/arm64/boot/dts/renesas/r9a07g054.dtsi
+index 107e791..e255603 100644
+--- a/arch/arm64/boot/dts/renesas/r9a07g054.dtsi
++++ b/arch/arm64/boot/dts/renesas/r9a07g054.dtsi
+@@ -1704,3 +1704,5 @@
+ 				  "hyp-virt";
+ 	};
+ };
++
++#include "r9a07g054-drpai.dtsi"
+diff --git b/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc-drpai.dtsi b/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc-drpai.dtsi
+new file mode 100644
+index 0000000..861bf7c
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc-drpai.dtsi
+@@ -0,0 +1,59 @@
++/ {
++	memory@48000000 {
++		device_type = "memory";
++		/* first 128MB is reserved for secure area. */
++		reg = <0x0 0x48000000 0x0 0x78000000>;
++	};
++
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		/* device specific region for contiguous allocations */
++		drp_reserved: DRP-AI {
++			reusable;
++			reg = <0x0 0x80000000 0x0 0x20000000>;
++		};
++
++		image_buf0: image_buf@0 {
++			compatible = "shared-dma-pool";
++			reusable;
++			reg = <0x0 0xB0000000 0x0 0x04000000>;
++			label = "image_buf0";
++		};
++
++		isp_work0: SIMPLE_ISP {
++			reusable;
++			reg = <0x0 0xB4000000 0x0 0x03000000>;
++		};
++	};
++
++	mmngr {
++		compatible = "renesas,mmngr";
++		memory-region = <&mmp_reserved>;
++	};
++
++	mmngrbuf {
++		compatible = "renesas,mmngrbuf";
++	};
++
++	vspm_if {
++		compatible = "renesas,vspm_if";
++	};
++
++	udmabuf@0 {
++		compatible = "ikwzm,u-dma-buf";
++		device-name = "udmabuf0";
++		minor-number = <0>;
++		size = <0x4000000>; // 64MiB
++		dma-coherent;
++		memory-region = <&image_buf0>;
++	};
++};
++
++&drpai0 {
++	memory-region = <&drp_reserved>;
++	linux-memory-region = < &{/memory@48000000} >;
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dts b/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dts
+index 6214601..60c82ca 100644
+--- a/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dts
++++ b/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dts
+@@ -54,3 +54,5 @@
+ 	model = "Renesas SMARC EVK based on r9a07g054l2";
+ 	compatible = "renesas,smarc-evk", "renesas,r9a07g054l2", "renesas,r9a07g054";
+ };
++
++#include "r9a07g054l2-smarc-drpai.dtsi"

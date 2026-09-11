@@ -1,0 +1,26 @@
+From 3d61742ce0eda52ab5b8c6efe89372627f956cd6 Mon Sep 17 00:00:00 2001
+From: Tai Huynh <tai.huynh.cp@renesas.com>
+Date: Fri, 27 Feb 2026 08:58:11 +0700
+Subject: [PATCH] config macro eMMC_SD_SEL to support eMMC boot
+
+Define macro eMMC_SD_SEL = 1 to support eMMC boot on V2N
+---
+ arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk.dts b/arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk.dts
+index 5815cf860..aa3ca9337 100644
+--- a/arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk.dts
++++ b/arch/arm64/boot/dts/renesas/r9a09g056n48-rzv2n-evk.dts
+@@ -12,7 +12,7 @@
+  * - microSD   0 (default)
+  * - eMMC      1
+  */
+-#define eMMC_SD_SEL    0
++#define eMMC_SD_SEL    1
+ 
+ /*
+  * Enable Rootcomplex or Endpoint mode for PCIe.
+-- 
+2.34.1
+

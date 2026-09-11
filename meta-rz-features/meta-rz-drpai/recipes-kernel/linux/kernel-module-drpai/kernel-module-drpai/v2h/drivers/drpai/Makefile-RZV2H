@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Makefile for DRP-AI/DRP.
+#
+ccflags-y += -Werror
+ccflags-y += -DDRPAI_CONFIG_ARCH_RZV2H
+
+obj-m += drpai.o
+drpai-objs := drpai-core.o drpai-if.o
+
+SRC := $(shell pwd)
+all:
+	$(MAKE) -C $(KERNEL_SRC) M=$(SRC) modules
+
+clean:
+	$(MAKE) -C $(KERNEL_SRC) M=$(SRC) clean

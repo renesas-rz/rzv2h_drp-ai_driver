@@ -1,0 +1,52 @@
+From 487153e7a0061c22e6627a97839c40bdff9cae2f Mon Sep 17 00:00:00 2001
+From: Tai Huynh <tai.huynh.cp@renesas.com>
+Date: Mon, 4 Aug 2025 16:17:57 +0700
+Subject: [PATCH 8/8] WA: available: v4l2: memory: userptr
+
+Signed-off-by: Tai Huynh <tai.huynh.cp@renesas.com>
+---
+ drivers/media/common/videobuf2/frame_vector.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/media/common/videobuf2/frame_vector.c b/drivers/media/common/videobuf2/frame_vector.c
+index 07ebe4424df3..1c424f212b94 100644
+--- a/drivers/media/common/videobuf2/frame_vector.c
++++ b/drivers/media/common/videobuf2/frame_vector.c
+@@ -40,7 +40,7 @@ int get_vaddr_frames(unsigned long start, unsigned int nr_frames,
+ 		     struct frame_vector *vec)
+ {
+ 	int ret;
+-
++	
+ 	if (nr_frames == 0)
+ 		return 0;
+ 
+@@ -52,14 +52,25 @@ int get_vaddr_frames(unsigned long start, unsigned int nr_frames,
+ 	ret = pin_user_pages_fast(start, nr_frames,
+ 				  FOLL_FORCE | FOLL_WRITE | FOLL_LONGTERM,
+ 				  (struct page **)(vec->ptrs));
++#if defined(CONFIG_ARCH_R9A09G011) || defined(CONFIG_ARCH_R9A09G055) || defined(CONFIG_ARCH_R9A07G054)
+ 	vec->got_ref = true;
+ 	vec->is_pfns = false;
+ 	vec->nr_frames = ret;
++#else
++        vec->got_ref = false;
++        vec->is_pfns = true;
++        vec->nr_frames = ret;
++#endif
+ 
++#if defined(CONFIG_ARCH_R9A09G011) || defined(CONFIG_ARCH_R9A09G055) || defined(CONFIG_ARCH_R9A07G054)
++	return ret ? ret : -EFAULT;
++#else
+ 	if (likely(ret > 0))
+ 		return ret;
++#endif
+ 
+ 	vec->nr_frames = 0;
++	
+ 	return ret ? ret : -EFAULT;
+ }
+ EXPORT_SYMBOL(get_vaddr_frames);
+-- 
+2.34.1
+

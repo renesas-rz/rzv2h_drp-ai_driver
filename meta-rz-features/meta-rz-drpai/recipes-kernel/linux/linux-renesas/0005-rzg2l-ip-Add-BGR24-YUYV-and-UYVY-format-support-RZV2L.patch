@@ -1,0 +1,95 @@
+From 2a88412a7b63a1ad57f7a086c4b2d1cb28baacab Mon Sep 17 00:00:00 2001
+From: Tai Huynh <tai.huynh.cp@renesas.com>
+Date: Thu, 16 Oct 2025 13:54:41 +0700
+Subject: [PATCH] rzg2l-ip: Add: BGR24: YUYV: and: UYVY: format: support
+
+Signed-off-by: Tai Huynh <tai.huynh.cp@renesas.com>
+---
+ .../platform/renesas/rzg2l-cru/rzg2l-ip.c     | 36 +++++++++++++++++++
+ .../platform/renesas/rzg2l-cru/rzg2l-video.c  |  2 ++
+ 2 files changed, 38 insertions(+)
+
+diff --git a/drivers/media/platform/renesas/rzg2l-cru/rzg2l-ip.c b/drivers/media/platform/renesas/rzg2l-cru/rzg2l-ip.c
+index 79555ff09de0..ff3fd395acfb 100644
+--- a/drivers/media/platform/renesas/rzg2l-cru/rzg2l-ip.c
++++ b/drivers/media/platform/renesas/rzg2l-cru/rzg2l-ip.c
+@@ -12,6 +12,24 @@
+ #include "rzg2l-cru-regs.h"
+ 
+ static const struct rzg2l_cru_ip_format rzg2l_cru_ip_formats[] = {
++        {
++                .codes = {
++                        MEDIA_BUS_FMT_UYVY8_2X8,
++                },
++                .datatype = MIPI_CSI2_DT_YUV422_8B,
++                .format = V4L2_PIX_FMT_UYVY,
++                .icndmr = ICnDMR_YCMODE_UYVY,
++                .fmt_types = V4L2_PIXEL_ENC_YUV,
++        },
++        {
++                .codes = {
++                        MEDIA_BUS_FMT_UYVY8_2X8
++                },
++                .format = V4L2_PIX_FMT_NV16,
++                .datatype = MIPI_CSI2_DT_YUV422_8B,
++                .icndmr = ICnDMR_YCMODE_NV16,
++                .fmt_types = V4L2_PIXEL_ENC_YUV,
++        },
+ 	{
+ 		.codes = {
+ 			MEDIA_BUS_FMT_UYVY8_1X16,
+@@ -48,6 +66,15 @@ static const struct rzg2l_cru_ip_format rzg2l_cru_ip_formats[] = {
+ 		.icndmr = ICnDMR_YCMODE_YUYV,
+ 		.fmt_types = V4L2_PIXEL_ENC_YUV,
+ 	},
++        {
++                .codes = {
++                        MEDIA_BUS_FMT_YUYV8_2X8,
++                },
++                .format = V4L2_PIX_FMT_YUYV,
++                .datatype = MIPI_CSI2_DT_YUV422_8B,
++                .icndmr = ICnDMR_YCMODE_YUYV,
++                .fmt_types = V4L2_PIXEL_ENC_YUV,
++        },
+ 	{
+ 		.codes = {
+ 			MEDIA_BUS_FMT_Y8_1X8,
+@@ -66,6 +93,15 @@ static const struct rzg2l_cru_ip_format rzg2l_cru_ip_formats[] = {
+ 		.icndmr = ICnDMR_RGBMODE_RGB24,
+ 		.fmt_types = V4L2_PIXEL_ENC_RGB,
+ 	},
++        {
++                .codes = {
++                        MEDIA_BUS_FMT_BGR888_1X24,
++                },
++                .format = V4L2_PIX_FMT_BGR24,
++                .datatype = MIPI_CSI2_DT_RGB888,
++                .icndmr = ICnDMR_RGBMODE_RGB24,
++                .fmt_types = V4L2_PIXEL_ENC_RGB,
++        },	
+ 	{
+ 		.codes = {
+ 			MEDIA_BUS_FMT_RGB444_1X12,
+diff --git a/drivers/media/platform/renesas/rzg2l-cru/rzg2l-video.c b/drivers/media/platform/renesas/rzg2l-cru/rzg2l-video.c
+index af94f2749f78..d2f7abeded07 100644
+--- a/drivers/media/platform/renesas/rzg2l-cru/rzg2l-video.c
++++ b/drivers/media/platform/renesas/rzg2l-cru/rzg2l-video.c
+@@ -1668,6 +1668,7 @@ static int rzg2l_cru_video_link_validate(struct media_link *link)
+ 	} else {
+ 		switch (fmt.format.code) {
+ 		case MEDIA_BUS_FMT_UYVY8_2X8:
++		case MEDIA_BUS_FMT_YUYV8_2X8:
+ 		case MEDIA_BUS_FMT_UYVY10_2X10:
+ 		case MEDIA_BUS_FMT_UYVY8_1X16:
+ 		case MEDIA_BUS_FMT_YUYV8_1X16:
+@@ -1676,6 +1677,7 @@ static int rzg2l_cru_video_link_validate(struct media_link *link)
+ 		case MEDIA_BUS_FMT_RGB565_2X8_LE:
+ 		case MEDIA_BUS_FMT_RGB666_1X18:
+ 		case MEDIA_BUS_FMT_RGB888_1X24:
++		case MEDIA_BUS_FMT_BGR888_1X24:
+ 		case MEDIA_BUS_FMT_SBGGR8_1X8:
+ 		case MEDIA_BUS_FMT_SGBRG8_1X8:
+ 		case MEDIA_BUS_FMT_SGRBG8_1X8:
+-- 
+2.34.1
+

@@ -1,0 +1,37 @@
+From dda1c8d7e42419a812496831c25617d976be1245 Mon Sep 17 00:00:00 2001
+From: Tai Huynh <tai.huynh.cp@renesas.com>
+Date: Thu, 16 Oct 2025 13:45:48 +0700
+Subject: [PATCH] rzg2l: csi: Add: BGR24: YUYV: and: UYVY: format: support
+
+Signed-off-by: Tai Huynh <tai.huynh.cp@renesas.com>
+---
+ drivers/media/platform/renesas/rzg2l-cru/rzg2l-csi2.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/media/platform/renesas/rzg2l-cru/rzg2l-csi2.c b/drivers/media/platform/renesas/rzg2l-cru/rzg2l-csi2.c
+index 6590a8a73e2d..f0776fb3600a 100644
+--- a/drivers/media/platform/renesas/rzg2l-cru/rzg2l-csi2.c
++++ b/drivers/media/platform/renesas/rzg2l-cru/rzg2l-csi2.c
+@@ -236,6 +236,10 @@ struct rzg2l_csi2_format {
+ };
+ 
+ static const struct rzg2l_csi2_format rzg2l_csi2_formats[] = {
++	{ .code = MEDIA_BUS_FMT_UYVY8_2X8,      .bpp = 16,
++	  .rate = RATE_RANGES(80, 4256)},
++        { .code = MEDIA_BUS_FMT_YUYV8_2X8,      .bpp = 16,
++          .rate = RATE_RANGES(80, 4256)},
+ 	{ .code = MEDIA_BUS_FMT_UYVY8_1X16,	.bpp = 16,
+ 	  .rate = RATE_RANGES(80, 4256)},
+ 	{ .code = MEDIA_BUS_FMT_YUYV8_1X16,	.bpp = 16,
+@@ -246,6 +250,8 @@ static const struct rzg2l_csi2_format rzg2l_csi2_formats[] = {
+ 	  .rate = RATE_RANGES(80, 5238)},
+ 	{ .code = MEDIA_BUS_FMT_RGB888_1X24,	.bpp = 24,
+ 	  .rate = RATE_RANGES(80, 6000)},
++        { .code = MEDIA_BUS_FMT_BGR888_1X24,    .bpp = 24,
++          .rate = RATE_RANGES(80, 6000)},
+ 	{ .code = MEDIA_BUS_FMT_SBGGR8_1X8,	.bpp = 8,
+ 	  .rate = RATE_RANGES(80, 2128)},
+ 	{ .code = MEDIA_BUS_FMT_SGBRG8_1X8,	.bpp = 8,
+-- 
+2.34.1
+
