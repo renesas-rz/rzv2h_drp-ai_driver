@@ -32,11 +32,42 @@ The DRP-AI driver is stored in ${YOCTO_WORK}/meta-rz-features/meta-rz-drpai.
 <br>
 
 ## Contents
-[1. Functions](#1-functions)  
-[2. Terminology](#2-terminology)  
-[3. Module Configuration](#3-module-configuration)  
-[4. APIs](#4-apis)  
-[5. Kernel Settings](#5-kernel-settings)  
+- [1. Functions](#1-functions)
+- [2. Terminology](#2-terminology)
+- [3. Module Configuration](#3-module-configuration)
+    - [3.1 Module Configuration](#31-module-configuration)
+    - [3.2 State Transition Diagram](#32-state-transition-diagram)
+- [4. APIs](#4-apis)
+    - [4.1 Device Node](#41-device-node)
+    - [4.2 External Function](#42-external-function)
+        - [4.2.1 open](#421-open)
+        - [4.2.2 close](#422-close)
+        - [4.2.3 write](#423-write)
+        - [4.2.4 read](#424-read)
+        - [4.2.5 ioctl(DRPAI_SET_ADRCONV)](#425-ioctldrpai_set_adrconv)
+        - [4.2.6 ioctl(DRPAI_ASSIGN)](#426-ioctldrpai_assign)
+        - [4.2.7 ioctl(DRPAI_START)](#427-ioctldrpai_start)
+        - [4.2.8 ioctl(DRPAI_RESET)](#428-ioctldrpai_reset)
+        - [4.2.9 ioctl(DRPAI_GET_STATUS)](#429-ioctldrpai_get_status)
+        - [4.2.10 select/pselect](#4210-selectpselect)
+        - [4.2.11 ioctl(DRPAI_ASSIGN_PARAM)](#4211-ioctldrpai_assign_param)
+        - [4.2.12 ioctl(DRPAI_PREPOST_CROP)](#4212-ioctldrpai_prepost_crop)
+        - [4.2.13 ioctl(DRPAI_PREPOST_INADDR)](#4213-ioctldrpai_prepost_inaddr)
+        - [4.2.14 ioctl(DRPAI_GET_DRPAI_AREA)](#4214-ioctldrpai_get_drpai_area)
+        - [4.2.15 ioctl(DRPAI_SET_DRP_MAX_FREQ)](#4215-ioctldrpai_set_drp_max_freq)
+        - [4.2.16 ioctl(DRPAI_SET_DRPAI_FREQ)](#4216-ioctldrpai_set_drpai_freq)
+    - [4.3 Structure](#43-structure)
+    - [4.4 Global Variables and Constants](#44-global-variables-and-constants)
+    - [4.5 Operation](#45-operation)
+        - [4.5.1 Single process/thread](#451-single-processthread)
+        - [4.5.2 Multi process/thread](#452-multi-processthread)
+        - [4.5.3 Suspend/Resume](#453-suspendresume)
+- [5. Kernel Settings](#5-kernel-settings)
+    - [5.1 Target Files](#51-target-files)
+    - [5.2 Kernel configuration](#52-kernel-configuration)
+    - [5.3 Device Tree](#53-device-tree)
+        - [5.3.1 DRP-AI part of r9a09g057.dtsi](#531-drp-ai-part-of-r9a09g057dtsi)
+        - [5.3.2 DRP-AI part of rzv2h-evk-common.dts](#532-drp-ai-part-of-rzv2h-evk-commondts)
 <br>
 
 ## 1. Functions
@@ -47,8 +78,10 @@ The following functions are supported:
 * Execute AI inference based on the DRP-AI Object files *1 deployed in memory *2.
 * Wait for AI inference using "select" function or polling.
 * Stop forcibly during AI inference.
+* The RZ/V2H DRP-AI driver supports Suspend/Resume operations (Suspend-to-Idle). *3.
     * *1 DRP-AI Object files: Refer to "[2 Terminology](#2-terminology)".
     * *2 Reservation area dedicated to DRP-AI.
+    * *3 If the process is suspended between the start of inference with ioctl(DRPAI_START) and the end of select(), the inference results at that point are not guaranteed. Refer to "[4.5.3 Suspend/Resume](#453-suspendresume)".
 <br>  
 
 ## 2. Terminology
@@ -136,7 +169,7 @@ Table 4-2 System Calls
 |[4.2.7](#427-ioctldrpai_start)|ioctl(DRPAI_START)|Start AI inference.|
 |[4.2.8](#428-ioctldrpai_reset)|ioctl(DRPAI_RESET)|Reset AI inference.|
 |[4.2.9](#429-ioctldrpai_get_status)|ioctl(DRPAI_GET_STATUS)|Get internal status of DRP-AI.|
-|[4.2.10](#4210-select--pselect)|select / pselect|Waiting for AI inference to complete or an error to occur.|
+|[4.2.10](#4210-selectpselect)|select / pselect|Waiting for AI inference to complete or an error to occur.|
 |[4.2.11](#4211-ioctldrpai_assign_param)|ioctl(DRPAI_ASSIGN_PARAM)|Change the write function mode to load drp_param_info.txt into /dev/drpai0.|
 |[4.2.12](#4212-ioctldrpai_prepost_crop)|ioctl(DRPAI_PREPOST_CROP)|Set a parameter of crop preprocessing operation.|
 |[4.2.13](#4213-ioctldrpai_prepost_inaddr)|ioctl(DRPAI_PREPOST_INADDR)|Change the input/output address of DRP-AI.|
@@ -253,7 +286,7 @@ ssize_t write(int fd, const void *buf, size_t count);
 |EINVAL(22)  |The argument is invalid. count is 0.|  
 |ENOMEM(12)  |Failed to get the buffer area inside the DRP-AI driver.|  
 |EACCES(13)  |Attempted to write more than the size set by ioctl(DRPAI_ASSIGN) function.<br>An attempt was made to write while reading the size set by ioctl(DRPAI_ASSIGN) function.<br>ioctl(DRPAI_ASSIGN) function is not running. |  
-|ERESTART(85)|Failed to get a read/write permission.<br>Try this system call again.<br>There is sample code in [4.5.2 Multi process / thread](#452-multi-process--thread). |  
+|ERESTART(85)|Failed to get a read/write permission.<br>Try this system call again.<br>There is sample code in [4.5.2 Multi process/thread](#452-multi-processthread). |  
  
 #### [Feature]  
 This function writes the data (DRP-AI Object files etc.) to the address specified by ioctl(DRPAI_ASSIGN) function.   
@@ -296,7 +329,7 @@ ssize_t read(int fd, const void *buf, size_t count);
 |EINVAL(22)  |The argument is invalid. count is 0. |
 |ENOMEM(12)  |Failed to secure the buffer area inside the DRP-AI driver.<br>Attempted to read more than the size set by ioctl(DRPAI_ASSIGN) function. |
 |EACCES(13)  |An attempt was made to read while writing the size set by ioctl(DRPAI_ASSIGN) function.<br>ioctl(DRPAI_ASSIGN) function is not running. |
-|ERESTART(85)|Failed to get a read/write permission. Try this system call again. There is sample code in [4.5.2 Multi process / thread](#452-multi-process--thread).|
+|ERESTART(85)|Failed to get a read/write permission. Try this system call again. There is sample code in [4.5.2 Multi process/thread](#452-multi-processthread).|
 
 #### [Feature]  
 This function reads the data (DRP-AI output result etc.) from the address specified by ioctl (DRPAI_ASSIGN) function.
@@ -413,7 +446,7 @@ int ioctl(int fd, DRPAI_ASSIGN, drpai_data_t* file);
 |EINVAL(22)|Invalid argument.<br>file is NULL. <br>file.address is outside the DRP-AI memory area.<br>file.address is not 64-byte aligned.<br>file.size is 0.<br>Failed to assign memory area because desired area already assigned by other thread/process.<br>Set a different memory area from other process/thread.  |
 |EACCES(13)|The previous writing or reading has not been completed.|
 |EFAULT(14)|Internal error.|
-|ERESTART(85)|Failed to get a read/write permission.<br>Try this system call again. <br>There is sample code in [4.5.2 Multi process / thread](#452-multi-process--thread). |
+|ERESTART(85)|Failed to get a read/write permission.<br>Try this system call again. <br>There is sample code in [4.5.2 Multi process/thread](#452-multi-processthread). |
 
 #### [Feature]  
 Set the address and size for reading and writing data (DRP-AI Object files, DRP-AI output result, etc.) in DRP-AI memory area.  
@@ -538,6 +571,7 @@ int ioctl(int fd, DRPAI_GET_STATUS, drpai_status_t* drpai_status);
 |EFAULT(14)    |Internal error.|
 |EIO(5)        |DRP-AI H/W error.|
 |ETIMEDOUT(110)|Exclusive control of DRP-AI for multi process/threads failed.<br>To solve this error, check your process/thread that use DRP-AI works properly.<br>Or in most cases, DRP-AI H/W may not be working properly, so try to restart a system.|  
+|EAGAIN(11)    |If the system is suspended (Suspend-to-Idle) after starting inference with ioctl(DRPAI_START) and before select() finishes |
 
 #### [Feature]  
 Gets the internal status of DRP-AI when this function is executed.  
@@ -550,7 +584,7 @@ By using conditional branching based on the return value of this function and Er
 None.  
 <br>
 
-### 4.2.10 select / pselect
+### 4.2.10 select/pselect
 #### [Overview]  
 Waiting for AI inference to complete or DRP-AI H/W error to occur.  
 
@@ -624,7 +658,7 @@ int ioctl(int fd, DRPAI_ASSIGN_PARAM, drpai_assign_param_t * assign_param);
 |EINVAL(22)  |Invalid argument.<br>The situations below cause this error.<br>assign_param is NULL.<br>Member variables of assign_param are set as 0.|
 |EACCES(13)  |Execution order error.<br>The previous writing or reading has not been completed. <br>Complete previous writing or reading before executing this function.|
 |EFAULT(14)  |Internal error. |
-|ERESTART(85)|Failed to get a read/write permission.<br>Try this system call again. <br>There is sample code in [4.5.2 Multi process / thread](#452-multi-process--thread).|
+|ERESTART(85)|Failed to get a read/write permission.<br>Try this system call again. <br>There is sample code in [4.5.2 Multi process/thread](#452-multi-processthread).|
 
 #### [Feature]  
 Execute this function to change the mode of the write function.  
@@ -665,7 +699,7 @@ int ioctl(int fd, DRPAI_PREPOST_CROP, drpai_crop_t * crop_param);
 |EACCES(13)  |Execution order error. <br>The previous writing or reading has not been completed. <br>Complete previous writing or reading before executing this function.|
 |EFAULT(14)  |Internal error.|
 |EBUSY(16)   |AI inference is still ongoing. |
-|ERESTART(85)|Failed to get a read/write permission.<br>Try this system call again. <br>There is sample code in [4.5.2 Multi process / thread](#452-multi-process--thread).|
+|ERESTART(85)|Failed to get a read/write permission.<br>Try this system call again. <br>There is sample code in [4.5.2 Multi process/thread](#452-multi-processthread).|
 
 #### [Feature]  
 Change at runtime the clipping coordinates and size set in "op: crop" in "prepost_*.yaml" when executing DRP-AI Translator i8. It also changes the input size of preprocessing option after "op: crop" to the cropping size.  
@@ -711,7 +745,7 @@ int ioctl(int fd, DRPAI_PREPOST_INADDR, drpai_inout_t * inout_param);
 |EACCES(13)  |Execution order error.<br>The previous writing or reading has not been completed.<br>Complete previous writing or reading before executing this function.|
 |EFAULT(14)  |Internal error.|
 |EBUSY(16)   |AI inference is still ongoing.|
-|ERESTART(85)|Failed to get a read/write permission.<br>Try this system call again. <br>There is sample code in [4.5.2 Multi process / thread](#452-multi-process--thread).| 
+|ERESTART(85)|Failed to get a read/write permission.<br>Try this system call again. <br>There is sample code in [4.5.2 Multi process/thread](#452-multi-processthread).| 
 |ENOMEM(12)  |When executing address conversion using the ioctl(DRPAI_SET_ADRCONV), the conversion source address of the physical address specified by the arguments is no set by the ioctl(DRPAI_SET_ADRCONV).|
 
 #### [Feature]  
@@ -757,7 +791,7 @@ int ioctl(int fd, DRPAI_GET_DRPAI_AREA, drpai_data_t* drpai_data);
 |:---|:---| 
 |EINVAL(22)    |Invalid argument.<br>drpai_data is NULL.|
 |EFAULT(14)    |Internal error.|
-|ERESTART(85)  |Failed to get a read/write permission.<br>Try this system call again. <br>There is sample code in [4.5.2 Multi process / thread](#452-multi-process--thread).| 
+|ERESTART(85)  |Failed to get a read/write permission.<br>Try this system call again. <br>There is sample code in [4.5.2 Multi process/thread](#452-multi-processthread).| 
 |ETIMEDOUT(110)|Exclusive control of DRP-AI for multi process/threads failed.<br>To solve this error, check your process/thread that use DRP-AI works properly. <br>Or in most cases, DRP-AI H/W may not be working properly, so try to restart a system.|  
 
 #### [Feature]  
@@ -943,7 +977,7 @@ Table 4-3 to Table 4-5 shows the global constants used by DRP-AI driver.
 
 ## 4.5 Operation
 
-### 4.5.1 Single process / thread
+### 4.5.1 Single process/thread
 Below is a flowchart of a DRP-AI driver basic usage example.
 
 <img src=./img/Figure_4-1.png width=800><br>
@@ -963,7 +997,7 @@ Figure 4-4 Deploy drp_param_info.txt into "/dev/drpai0"
 <br>
 <br>
 
-### 4.5.2 Multi process / thread
+### 4.5.2 Multi process/thread
 Figure 4-5 is a flowchart of a DRP-AI driver at multi process / threads (2 process / threads) example.<br>
 The DRP-A driver can be called from multiple processes and threads. However, one open corresponds to one AI model. Also, AI inference cannot be run at the same time.<br>
 <img src=./img/Figure_4-5.png width=800><br>
@@ -983,6 +1017,22 @@ if((-1 == ret) && (ERESTART == errno))
     } while((-1 == ret) && (ERESTART == errno))
 }
 ```
+<br>
+
+### 4.5.3 Suspend/Resume
+The RZ/V2H DRP-AI driver supports Suspend/Resume operations.<br>
+The following suspend mode is supported.<br>
+
+|Suspend mode|Setting of /sys/power/mem_sleep|
+|:---|:---|
+|Suspend-to-Idle (S2Idle)|s2idle|
+
+When suspended, the hardware will automatically stop.<br>
+It will be restored automatically when you resume.<br>
+No user action is required.<br>
+However, if the process is suspended between the start of inference with ioctl(DRPAI_START) and the end of select(), ioctl(DRPAI_GET_STATUS) will return Error number EAGAIN.<br>
+The inference results at that time are not guaranteed, but you can continue to perform the next inference.<br>
+See Figure 4-1 flowchart.<br>
 <br>
 
 ## 5. Kernel Settings
